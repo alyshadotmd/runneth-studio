@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark" />
+    <link rel="icon" href="{{ROUTE}}/favicon.svg" />
+    <title>Content studio</title>
+  </head>
+  <body>
+    <wa-page class="wa-cloak">
+      <main>
+        <layout-measure size="wide">
+          <div id="app"></div>
+        </layout-measure>
+      </main>
+    </wa-page>
+    <wa-dialog id="cut-dialog" label="Your cut">
+      <div class="cut-player">
+        <video id="cut-video" playsinline controls></video>
+        <p class="cut-now" id="cut-now"></p>
+      </div>
+    </wa-dialog>
+  </body>
+</html>

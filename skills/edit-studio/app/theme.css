@@ -1,0 +1,47 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600&family=Instrument+Serif:ital@1&display=swap");
+
+/* Dark grid, Inter, DM Mono labels, Instrument Serif accent, lime highlights. */
+:root {
+  --bg: #15161a;
+  --card: #1b1c21;
+  --soft: #ffffff08;
+  --soft-2: #ffffff0f;
+  --line: #ffffff1a;
+  --line-2: #ffffff33;
+  --text: #ffffff;
+  --muted: #ffffffb3;
+  --quiet: #ffffff80;
+  --deep: #0f1013;
+  --lime: #cfff5b;
+  --on-lime: #111111;
+  --sans: Inter, Arial, sans-serif;
+  --mono: "DM Mono", ui-monospace, monospace;
+  --serif: "Instrument Serif", Georgia, serif;
+}
+
+.wa-theme-runneth, .wa-dark, :root {
+  --wa-font-family-body: var(--sans);
+  --wa-font-family-heading: var(--sans);
+  --wa-font-family-code: var(--mono);
+  --wa-color-brand-fill-loud: var(--lime);
+  --wa-color-brand-on-loud: var(--on-lime);
+  --wa-color-brand-border-loud: var(--lime);
+  --wa-color-text-normal: var(--text);
+  --wa-color-text-quiet: var(--quiet);
+  --wa-color-text-link: var(--lime);
+  --wa-color-surface-default: var(--card);
+  --wa-color-surface-raised: var(--card);
+  --wa-color-surface-lowered: var(--deep);
+  --wa-color-surface-border: var(--line-2);
+  --wa-color-neutral-fill-loud: #ffffff;
+  --wa-color-neutral-on-loud: var(--on-lime);
+  --wa-color-neutral-border-loud: var(--line-2);
+  --wa-color-neutral-on-quiet: var(--text);
+  --wa-color-neutral-on-normal: var(--text);
+  --wa-form-control-background-color: var(--soft);
+  --wa-form-control-border-color: var(--line-2);
+  --wa-form-control-value-color: var(--text);
+  --wa-form-control-label-color: var(--lime);
+  --wa-form-control-border-radius: 6px;
+  --wa-focus-ring-color: var(--lime);
+}
