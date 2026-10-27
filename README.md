@@ -1,4 +1,4 @@
-# studio
+# runneth-studio
 
 A content studio for your videos, built for Runneth. Every video you work on becomes one project with one folder and one card in your studio. Open the card to pick your takes, mark your b-roll and review each edit, all in one place.
 
