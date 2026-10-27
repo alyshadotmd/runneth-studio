@@ -228,7 +228,19 @@ function renderBroll(p, base, data, takes) {
   const prog = el("p", "progress"); const cnt = el("b", "", "0"); const unit = el("span", "", " clips kept"); prog.append(cnt, unit);
   const bCopy = document.createElement("wa-button"); bCopy.className = "lime-btn"; bCopy.setAttribute("size", "small");
   const ic = document.createElement("wa-icon"); ic.setAttribute("slot", "start"); ic.setAttribute("name", "copy"); bCopy.append(ic, "Copy my clips");
-  const acts = el("div", "actions"); acts.append(bCopy); bar.append(prog, acts);
+  const acts = el("div", "actions"); acts.append(bCopy);
+  // Approving the kept clips tells Runneth it can delete the full b-roll videos to save space.
+  const toApprove = videos.filter((v) => v.done && !v.approved);
+  if (toApprove.length) {
+    const bOk = document.createElement("wa-button"); bOk.setAttribute("size", "small"); bOk.setAttribute("appearance", "outlined");
+    const ic2 = document.createElement("wa-icon"); ic2.setAttribute("slot", "start"); ic2.setAttribute("name", "check"); bOk.append(ic2, "Approve kept clips");
+    bOk.addEventListener("click", async () => {
+      const text = `✅ Approved b-roll clips: ${p.title} · ${toApprove.map((v) => `${v.name} (${v.desc})`).join(", ")}. You can delete the full videos.`;
+      try { await navigator.clipboard.writeText(text); flash(bOk); } catch { window.prompt("Copy this and send it to Runneth:", text); }
+    });
+    acts.append(bOk);
+  }
+  bar.append(prog, acts);
   const nav = el("nav", "chipnav");
   appEl.append(bar, nav);
   const players = [];
@@ -247,7 +259,7 @@ function renderBroll(p, base, data, takes) {
     const sec = el("section", "card"); sec.id = `vid-${v.id}`;
     const head = el("div", "card-head"); const left = el("div"); left.append(el("p", "eyebrow", v.name), el("h2", "", v.desc)); head.append(left);
     if (v.done) {
-      head.append(el("span", "tag lime", `✅ ${v.picks.length} clip${v.picks.length === 1 ? "" : "s"} kept`));
+      head.append(el("span", "tag lime", `✅ ${v.picks.length} clip${v.picks.length === 1 ? "" : "s"} kept${v.approved ? " · approved" : ""}`));
       const row = el("div", "takes");
       v.picks.forEach((c) => {
         const card = el("article", "take picked");

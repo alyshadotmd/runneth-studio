@@ -51,7 +51,7 @@ The `projects/` folder sits in the brain and is made once, the first time.
 What goes where:
 
 - **raw/a-roll:** the original talking-head footage, untouched.
-- **raw/b-roll:** the original full b-roll videos, untouched. They stay here for the life of the project.
+- **raw/b-roll:** the original full b-roll videos, untouched, until the person approves the kept clips. Then they're deleted to save space (see "Approving the kept clips").
 - **b-roll-picks:** only the cut b-roll clips that were kept.
 - **drafts:** every in-between version and working file.
 - **final:** the finished video(s).
@@ -111,6 +111,16 @@ There are two ways b-roll lands here, matching the b-roll skill's opening questi
   ```
   with `picks.json` like `[{"pick": 1, "start": 3.6, "end": 5.6, "file": "<project>/b-roll-picks/2026-10-27-v1-1-tired-sigh.mp4", "why": "The cat in the back makes it feel real.", "line": 5}]`. Run `add-broll` for that video first if it isn't in the tab yet (it prints the video id). `line` is optional.
 
+### Approving the kept clips
+
+Once clips are kept, ask the person to check them in the B-roll tab and approve them. They approve by saying so in the chat or with the tab's **Approve kept clips** button, which copies `✅ Approved b-roll clips: <title> · <videos>. You can delete the full videos.` Then run:
+
+```bash
+python3 scripts/studio.py approve-broll --project <slug> --video-id all
+```
+
+(or `--video-id v1` for one video). This deletes each approved video's original from `raw/b-roll` and its full copy in the studio, to save space. The kept clips in `b-roll-picks` and in the tab stay. Say in one line how much space it freed. The originals are deleted only after the person approves; until then they stay, so any clip can be recut.
+
 ### 🎞️ Review edit
 
 Every time a video should be watched (a first cut, a round of fixes, b-roll added, headline and captions, the final), add it as the next version:
@@ -131,7 +141,8 @@ Get the studio's address from `app list` (the `url` for `content-studio`) and ad
 Every tab has a copy button. Each pasted message names the project, so match it to that project:
 
 - **Take picks** (`<title> take picks`, one line per script line, like `1. Take 2 · Video B 0:07.0-0:10.2 · L01-T02`): build the cut from those takes, then add it as a version.
-- **B-roll clips** (`<title> b-roll picks`, grouped by video, each with a start, end, optional line and why): cut each clip from the original in `raw/b-roll`, save it in `b-roll-picks`, run `add-broll-picks`, and pass the reasons to the b-roll skill so it learns from them.
+- **B-roll clips** (`<title> b-roll picks`, grouped by video, each with a start, end, optional line and why): cut each clip from the original in `raw/b-roll`, save it in `b-roll-picks`, run `add-broll-picks`, pass the reasons to the b-roll skill so it learns from them, and ask them to approve the kept clips.
+- **B-roll approval** (`✅ Approved b-roll clips: ...`): run `approve-broll` for those videos.
 - **Notes** (`<title> · V2 (label) notes`, each with a time or "Whole video"): work through every note, render, add the result as the next version with a label saying what changed, and say which notes are done in the same order they wrote them.
 - **Approval** (`✅ Approved: <title> · V3 (label).`): that version is the one they want. Carry on with the next editing step on it, or, if it's the final, copy it into `final/` and call it done.
 

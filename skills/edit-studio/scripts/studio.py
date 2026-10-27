@@ -21,6 +21,11 @@
   python3 studio.py add-broll-picks --project <slug> --video-id v1 --picks picks.json
       Shows the clips kept from one b-roll video in the B-roll tab.
 
+  python3 studio.py approve-broll --project <slug> --video-id v1
+      After the person approves the kept clips: deletes that b-roll video's
+      original from raw/b-roll and its copy in the studio, to save space.
+      Use --video-id all for every video with kept clips.
+
   python3 studio.py add-version --project <slug> --video drafts/cut.mp4 --label "First cut"
       Adds an edit to the Review edit tab as the next version.
 
@@ -278,6 +283,34 @@ def add_broll_picks(app, slug, video_id, picks_file):
     done(project, "broll", {"videoId": video_id, "picks": len(out)})
 
 
+def approve_broll(app, slug, video_id):
+    index_path, index = load_index(app)
+    project = find_project(index, slug)
+    base = app / "data" / "projects" / slug
+    data = read_json(base / "broll.json", {"videos": []})
+    targets = [v for v in data["videos"] if v.get("done") and (video_id == "all" or v["id"] == video_id)]
+    if not targets:
+        sys.exit(f"No b-roll video with kept clips matches {video_id}. Cut and add the picks first.")
+    raw = (Path(project.get("folder", "")) / "raw" / "b-roll").resolve()
+    freed, deleted = 0, []
+    for v in targets:
+        src = Path(v.get("source", ""))
+        # Only originals inside this project's raw/b-roll folder are deleted.
+        if src.is_file() and raw in src.resolve().parents:
+            freed += src.stat().st_size
+            src.unlink()
+            deleted.append(src.name)
+        for f in (base / "videos" / f"{v['id']}.mp4", base / "videos" / f"{v['id']}.jpg"):
+            if f.exists():
+                freed += f.stat().st_size
+                f.unlink()
+        v["approved"] = True
+    write_json(base / "broll.json", data)
+    touch(app, index_path, index, project, "broll")
+    done(project, "broll", {"approved": [v["id"] for v in targets], "deletedOriginals": deleted,
+                            "freedMB": round(freed / 1e6, 1)})
+
+
 def add_version(app, slug, video, label):
     index_path, index = load_index(app)
     project = find_project(index, slug)
@@ -322,6 +355,7 @@ def main():
     a = sub.add_parser("add-takes"); a.add_argument("--project", required=True); a.add_argument("--takes", required=True)
     a = sub.add_parser("add-broll"); a.add_argument("--project", required=True); a.add_argument("--video", required=True); a.add_argument("--desc", default="")
     a = sub.add_parser("add-broll-picks"); a.add_argument("--project", required=True); a.add_argument("--video-id", required=True); a.add_argument("--picks", required=True)
+    a = sub.add_parser("approve-broll"); a.add_argument("--project", required=True); a.add_argument("--video-id", required=True)
     a = sub.add_parser("add-version"); a.add_argument("--project", required=True); a.add_argument("--video", required=True); a.add_argument("--label", default="")
     args = ap.parse_args()
     app = Path(args.app_dir)
@@ -337,6 +371,8 @@ def main():
         add_broll(app, args.project, args.video, args.desc)
     elif args.cmd == "add-broll-picks":
         add_broll_picks(app, args.project, args.video_id, args.picks)
+    elif args.cmd == "approve-broll":
+        approve_broll(app, args.project, args.video_id)
     else:
         add_version(app, args.project, args.video, args.label)
 
