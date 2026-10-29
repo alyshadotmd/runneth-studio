@@ -160,6 +160,40 @@ def list_projects(app):
                       for p in index["projects"]], indent=1, ensure_ascii=False))
 
 
+INFO_TEMPLATE = """# {title}
+
+Started {date}.
+
+## What it is
+_One or two sentences: what the video is and who it's for._
+
+## Files
+- Raw: `raw/a-roll/`, `raw/b-roll/`
+- B-roll kept: `b-roll-picks/`
+- Final: `final/` (none yet)
+
+## Caption
+_Added when the video is ready to post._
+
+## What's said, with times
+_Filled in after the first cut: each line and where it starts in the raw footage._
+
+## Moments worth reusing as b-roll
+_Shots from this video that could work in another one._
+"""
+
+
+def add_to_projects_list(projects_dir, slug, title, emoji):
+    """Keep projects/index.md as the list of every project, newest at the bottom."""
+    path = projects_dir / "index.md"
+    if not path.exists():
+        path.write_text("# Projects\n\nOne folder per video. Each one has `info.md` (what the video is, its files, caption and reusable moments), `script.md`, `version-log.md`, `raw/a-roll`, `raw/b-roll`, `b-roll-picks`, `drafts` and `final`.\n\n")
+    line = f"- [{(emoji + ' ') if emoji else ''}{title}]({slug}/info.md)\n"
+    if f"({slug}/info.md)" not in path.read_text():
+        with open(path, "a") as f:
+            f.write(line)
+
+
 def new_project(app, title, date, projects_dir, emoji, ptype, brand):
     index_path, index = load_index(app)
     date = date or datetime.date.today().isoformat()
@@ -176,6 +210,9 @@ def new_project(app, title, date, projects_dir, emoji, ptype, brand):
         (folder / "script.md").write_text(f"# {title}: script\n\n_No script yet._\n")
     if not (folder / "version-log.md").exists():
         (folder / "version-log.md").write_text(f"# {title}: version log\n\nEvery version and what changed in it, newest at the bottom.\n")
+    if not (folder / "info.md").exists():
+        (folder / "info.md").write_text(INFO_TEMPLATE.format(title=title.strip(), date=date))
+    add_to_projects_list(Path(projects_dir), slug, title.strip(), emoji)
 
     project = {"slug": slug, "title": title.strip(), "created": date, "folder": str(folder)}
     for k, v in (("emoji", emoji), ("type", ptype), ("brand", brand)):
