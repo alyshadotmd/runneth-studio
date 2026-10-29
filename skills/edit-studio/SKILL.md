@@ -14,6 +14,8 @@ All commands below run the helper script in this skill's folder: `python3 script
 
 ## Step 1: Find the project or name a new one
 
+Every video gets its project before any editing starts. This runs first, every time footage comes in or someone starts on a video, before the a-roll, b-roll or any other editing skill.
+
 Before anything else, run `python3 scripts/studio.py list` and look for a project that is this video.
 
 - **This video already has a project** → use it. Every step from here goes into that project, including b-roll, new takes and new versions.
@@ -42,11 +44,12 @@ projects/
     b-roll-picks/
     drafts/
     final/
+    info.md
     script.md
     version-log.md
 ```
 
-The `projects/` folder sits in the brain and is made once, the first time.
+The `projects/` folder sits in the brain and is made once, the first time. Its `index.md` lists every project with a link to its info document; the script adds each new project to it.
 
 What goes where:
 
@@ -55,6 +58,7 @@ What goes where:
 - **b-roll-picks:** only the cut b-roll clips that were kept.
 - **drafts:** every in-between version and working file.
 - **final:** the finished video(s).
+- **info.md:** the project's info document, kept short: what the video is, where its files are, the caption, what's said with times in the raw footage, and moments worth reusing as b-roll. The script makes it with these headings; fill each one in as that part exists (what it is right away, what's said after the first cut, the caption and final files when it's done).
 - **script.md:** the script. Put it in as soon as there is one.
 - **version-log.md:** every version and what changed in it.
 
