@@ -75,10 +75,15 @@ function header(p, tab) {
   for (const [k, lab] of [["takes", "🎬 Takes"], ["broll", "🎥 B-roll"], ["review", "🎞️ Review edit"]]) {
     const a = el("a", k === tab ? "on" : "", lab); a.href = `#/${p.slug}/${k}`; tabs.append(a);
   }
-  const meta = el("div", "proj-meta");
-  if (p.type) meta.append(el("span", "tag lav", p.type));
+  const meta = el("div", "proj-meta small-tags");
+  if (p.type) meta.append(el("span", "tag accent", p.type));
   if (p.brand) meta.append(el("span", "tag", p.brand));
-  h.append(back, title, meta, tabs);
+  // Title (plus the Notion link, only when the project has one) on the left, small tags on the right.
+  const top = el("div", "proj-top"); const left = el("div", "proj-top-left");
+  left.append(title);
+  if (p.notion) { const n = el("a", "notion-text-link", "🔗 Open in Notion"); n.href = p.notion; n.target = "_blank"; n.rel = "noopener"; left.append(n); }
+  top.append(left, meta);
+  h.append(back, top, tabs);
   return h;
 }
 
@@ -103,7 +108,7 @@ function renderTakes(p, base, data) {
   const acts = el("div", "actions");
   const mk = (label, icon, cls, variant) => { const b = document.createElement("wa-button"); b.setAttribute("size", "small"); if (variant) b.setAttribute("variant", variant); if (cls) b.className = cls; const i = document.createElement("wa-icon"); i.setAttribute("slot", "start"); i.setAttribute("name", icon); b.append(i, label); return b; };
   const bPlay = mk("Play my cut", "play", "", "brand");
-  const bCopy = mk("Copy my picks", "copy", "lime-btn");
+  const bCopy = mk("Copy my picks", "copy", "accent-btn");
   const bClear = document.createElement("wa-button"); bClear.setAttribute("size", "small"); bClear.setAttribute("appearance", "plain"); bClear.textContent = "Clear picks";
   acts.append(bPlay, bCopy, bClear); bar.append(prog, acts);
   const nav = el("nav", "chipnav");
@@ -226,7 +231,7 @@ function renderBroll(p, base, data, takes) {
   const save = () => { store(KEY, st); count(); };
   const bar = el("div", "bar");
   const prog = el("p", "progress"); const cnt = el("b", "", "0"); const unit = el("span", "", " clips kept"); prog.append(cnt, unit);
-  const bCopy = document.createElement("wa-button"); bCopy.className = "lime-btn"; bCopy.setAttribute("size", "small");
+  const bCopy = document.createElement("wa-button"); bCopy.className = "accent-btn"; bCopy.setAttribute("size", "small");
   const ic = document.createElement("wa-icon"); ic.setAttribute("slot", "start"); ic.setAttribute("name", "copy"); bCopy.append(ic, "Copy my clips");
   const acts = el("div", "actions"); acts.append(bCopy);
   // Approving the kept clips tells Runneth it can delete the full b-roll videos to save space.
@@ -306,7 +311,7 @@ function renderBroll(p, base, data, takes) {
     const sel = document.createElement("select"); sel.append(new Option("Anywhere / not sure", ""));
     for (const l of lines) sel.append(new Option(`Line ${l.n}: ${l.script.slice(0, 70)}${l.script.length > 70 ? "…" : ""}`, String(l.n)));
     const why = document.createElement("textarea"); why.placeholder = "What makes this the best part?";
-    const saveBtn = document.createElement("wa-button"); saveBtn.className = "lime-btn"; saveBtn.setAttribute("size", "small"); saveBtn.textContent = "Save this clip";
+    const saveBtn = document.createElement("wa-button"); saveBtn.className = "accent-btn"; saveBtn.setAttribute("size", "small"); saveBtn.textContent = "Save this clip";
     mark.append(el("p", "eyebrow", "✂️ Mark a clip"), row);
     if (lines.length) mark.append(el("label", "", "Where it could go (optional)"), sel);
     mark.append(el("label", "", "Why this one?"), why, saveBtn);
@@ -372,23 +377,26 @@ function renderReview(p, base, data) {
   let ver = versions.find((x) => x.v === verFromHash) || versions[versions.length - 1];
 
   const nav = el("div", "ver-pick");
-  const sel = document.createElement("wa-select"); sel.setAttribute("label", "🎬 Version"); sel.setAttribute("size", "small");
+  const sel = document.createElement("wa-select"); sel.setAttribute("label", "🎬 Version");
   [...versions].reverse().forEach((x) => {
     const o = document.createElement("wa-option"); o.value = String(x.v);
-    o.textContent = `V${x.v} · ${x.label}${load(`picker:${p.slug}:approved:v${x.v}`) ? " ✅" : ""}`; sel.append(o);
+    o.textContent = `V${x.v} · ${x.label}${load(`picker:${p.slug}:approved:v${x.v}`) ? " ✅" : ""}`; o.title = o.textContent; sel.append(o);
   });
   sel.setAttribute("value", String(ver.v));
   sel.addEventListener("change", () => { const x = versions.find((y) => String(y.v) === String(sel.value)); if (x && x.v !== ver.v) { ver = x; draw(); } });
   nav.append(sel);
   const bar = el("div", "bar");
   const prog = el("p", "progress"); const cnt = el("b", "", "0"); const verLab = el("span", "", ""); prog.append(cnt, " notes on ", verLab);
-  const bCopy = document.createElement("wa-button"); bCopy.className = "lime-btn"; bCopy.setAttribute("size", "small");
+  const bCopy = document.createElement("wa-button"); bCopy.className = "accent-btn"; bCopy.setAttribute("size", "small");
   const ic = document.createElement("wa-icon"); ic.setAttribute("slot", "start"); ic.setAttribute("name", "copy"); bCopy.append(ic, "Copy my notes");
   const bOk = document.createElement("wa-button"); bOk.setAttribute("size", "small"); bOk.setAttribute("appearance", "outlined");
   const ic2 = document.createElement("wa-icon"); ic2.setAttribute("slot", "start"); ic2.setAttribute("name", "check"); bOk.append(ic2, "Approve this version");
   const acts = el("div", "actions"); acts.append(bCopy, bOk); bar.append(prog, acts);
   const holder = el("div");
-  appEl.append(bar, nav, holder);
+  // Notes and controls on the left, the video on the right so it sits high on the page.
+  const layout = el("div", "review-layout"); const side = el("div", "review-side"); const vidCol = el("div", "review-video");
+  side.append(bar, nav, holder); layout.append(side, vidCol);
+  appEl.append(layout);
 
   let st = [], KEY = "";
   const save = () => { store(KEY, st); cnt.textContent = st.length; };
@@ -402,7 +410,6 @@ function renderReview(p, base, data) {
     left.append(el("p", "eyebrow", `V${ver.v}${ver.date ? " · " + ver.date : ""}`), el("h2", "", ver.label));
     head.append(left, el("span", "tag lav", fmt(ver.dur)));
     if (load(`picker:${p.slug}:approved:v${ver.v}`)) head.append(el("span", "tag lime", "✅ Approved"));
-    const grid = el("div", "vid-grid");
     const pl = el("div", "player");
     const video = document.createElement("video"); video.preload = "metadata"; video.controls = true; video.playsInline = true;
     const src = url(`${base}review/${ver.file}.mp4`);
@@ -429,11 +436,11 @@ function renderReview(p, base, data) {
     const bGen = el("button", "", "🌐 Note on the whole video"); bGen.type = "button";
     row.append(atLab, bGen);
     const txt = document.createElement("textarea"); txt.placeholder = "What should change here?";
-    const saveBtn = document.createElement("wa-button"); saveBtn.className = "lime-btn"; saveBtn.setAttribute("size", "small"); saveBtn.textContent = "Save note";
+    const saveBtn = document.createElement("wa-button"); saveBtn.className = "accent-btn"; saveBtn.setAttribute("size", "small"); saveBtn.textContent = "Save note";
     mark.append(el("p", "eyebrow", "✍️ Leave a note"), row, txt, saveBtn);
     const notesWrap = el("div", "clips");
     panel.append(mark, el("p", "eyebrow", "📝 Your notes"), notesWrap);
-    grid.append(pl, panel); sec.append(head, grid); holder.append(sec);
+    sec.append(head, panel); holder.append(sec); vidCol.replaceChildren(pl);
 
     const showAt = () => { atLab.textContent = general ? "🌐 Whole video" : at == null ? "Pause where you want to leave a note" : `📍 At ${fmt(at)}`; bGen.textContent = general ? "📍 Note at a moment instead" : "🌐 Note on the whole video"; };
     const grab = () => { if (!general) { at = +video.currentTime.toFixed(2); showAt(); } };
