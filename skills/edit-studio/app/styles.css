@@ -17,8 +17,8 @@ h1.title em { font-family: var(--serif); font-style: italic; font-weight: 400; l
 
 /* Buttons */
 wa-button::part(base) { border-radius: 6px; font-family: var(--sans); font-weight: 600; }
-wa-button:not([variant]):not(.lime-btn)::part(base) { background: var(--soft); color: var(--text); border: 1px solid var(--line-2); }
-wa-button:not([variant]):not(.lime-btn):hover::part(base) { background: #fff; color: var(--on-lime); border-color: #fff; }
+wa-button:not([variant]):not(.lime-btn):not(.accent-btn)::part(base) { background: var(--soft); color: var(--text); border: 1px solid var(--line-2); }
+wa-button:not([variant]):not(.lime-btn):not(.accent-btn):hover::part(base) { background: #fff; color: var(--on-lime); border-color: #fff; }
 wa-button[appearance="plain"]::part(base) { background: transparent; border-color: transparent; color: var(--muted); }
 wa-button[variant="brand"]::part(base), .lime-btn::part(base) { background: var(--lime); color: var(--on-lime); border: 1px solid var(--lime); }
 wa-button[variant="brand"]:hover::part(base), .lime-btn:hover::part(base) { background: #fff; border-color: #fff; }
@@ -139,3 +139,57 @@ h2.sec { font-family: var(--mono); font-weight: 400; font-size: 0.8rem; letter-s
 .hero h1.title { font-size: clamp(1.92rem, 4.32vw, 3.36rem); }
 .proj { min-height: 150px; }
 .mark select { min-height: 2.9rem; line-height: 1.4; padding-block: 0.6rem; }
+
+/* ---- Accent color: action buttons, labels and info tags. Lime marks done and picked. ---- */
+.accent-btn::part(base) { background: var(--accent); color: var(--on-accent); border: 1px solid var(--accent); padding-inline: 1.1rem; }
+.accent-btn:hover::part(base) { background: color-mix(in srgb, var(--accent) 82%, #fff); border-color: color-mix(in srgb, var(--accent) 82%, #fff); }
+.tag.accent { background: color-mix(in srgb, var(--accent) 22%, transparent); border-color: color-mix(in srgb, var(--accent) 70%, transparent); color: var(--accent-text); }
+.tag.accent.mini { background: color-mix(in srgb, var(--accent) 18%, transparent); }
+a.tag.accent:hover { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.ln-tag, .clip .ln { color: var(--accent-text); }
+.mark textarea:focus, .mark select:focus { border-color: color-mix(in srgb, var(--accent) 80%, transparent); }
+
+/* Leave a note: the save button sits to the right at its own width. */
+.mark .accent-btn { align-self: flex-end; }
+
+/* Version picker: bigger, with room before the video card. */
+.ver-pick { margin: 0.25rem 0 1.5rem; }
+.ver-pick wa-select { max-width: 432px; font-size: 1.05rem; }
+.ver-pick wa-select::part(form-control-label) { font-size: 1.05rem; font-weight: 600; color: var(--lime); margin-bottom: 0.5rem; }
+.ver-pick wa-select::part(combobox) { min-height: 3rem; padding-block: 0.35rem; font-size: 1.05rem; }
+/* Action buttons: a comfortable size next to the bigger version picker. */
+.bar wa-button::part(base), .mark .accent-btn::part(base) { min-height: 2.5rem; font-size: 0.92rem; padding-inline: 1.15rem; }
+
+/* Real tabs: each tab is a raised folder tab; the open one joins the page below it. */
+.tabs { gap: 4px; border-bottom: 1px solid var(--line-2); padding-left: 2px; }
+.tabs a { border: 1px solid var(--line); border-bottom: none; border-radius: 10px 10px 0 0; background: var(--soft); padding: 11px 20px; margin-bottom: 0; border-top: 2px solid transparent; transition: background 0.15s, color 0.15s; }
+.tabs a:hover { background: var(--soft-2); }
+.tabs a.on { background: var(--bg); border-color: var(--line-2); border-top: 2px solid var(--lime); border-bottom: 1px solid var(--bg); margin-bottom: -1px; }
+
+/* Review edit: controls and notes left, video right. */
+.review-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, 360px); gap: 2rem; align-items: start; }
+.review-video { position: sticky; top: 1rem; }
+.review-side .card { margin-bottom: 0; }
+.review-side .ver-pick wa-select { max-width: none; }
+@media (max-width: 860px) { .review-layout { grid-template-columns: 1fr; } .review-video { position: static; order: -1; max-width: 360px; width: 100%; margin: 0 auto; } }
+
+/* Version names stay on one line; the full name shows on hover. */
+.ver-pick wa-option::part(label) { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 520px) {
+  .tabs { overflow: visible; gap: 3px; }
+  .tabs a { flex: 1 1 0; text-align: center; white-space: normal; padding: 9px 4px; font-size: 0.82rem; line-height: 1.25; }
+}
+
+/* Project header: title + Notion link left, small tags right. */
+.proj-top { display: flex; justify-content: space-between; align-items: flex-end; gap: 1.5rem; margin: 0.5rem 0 1.5rem; }
+.proj-top-left { min-width: 0; }
+.proj-top h1.title { font-size: clamp(1.8rem, 4.05vw, 3.15rem); margin: 0 0 0.6rem; }
+.notion-text-link { color: var(--accent-text); text-decoration: none; font-size: 0.95rem; font-weight: 500; }
+.notion-text-link:hover { color: var(--text); text-decoration: underline; text-underline-offset: 3px; }
+.proj-meta.small-tags { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; margin: 0; flex: 0 1 auto; max-width: 45%; }
+.small-tags .tag { font-size: 0.62rem; padding: 3px 7px; letter-spacing: 0.08em; }
+@media (max-width: 760px) {
+  .proj-top { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+  .proj-meta.small-tags { justify-content: flex-start; max-width: none; }
+}
+@media (min-width: 761px) { .proj-meta.small-tags { flex: 0 0 auto; flex-wrap: nowrap; max-width: none; } }
