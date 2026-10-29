@@ -33,6 +33,8 @@ python3 scripts/studio.py new-project --title "Buoy founder ad breakdown"
 
 Add `--brand "Buoy"`, `--emoji "💧"` or `--type "Short form"` when known; they show on the card. If a project with that title already exists, the script hands back that one and says `"existing": true`.
 
+**Notion:** the project page shows "🔗 Open in Notion" only when the project has a Notion link. Add one only when Notion is connected to their Runneth and the video has its own Notion page (for example a row in their content board): pass `--notion "<page link>"` here, or later with `python3 scripts/studio.py set-notion --project <slug> --url "<page link>"`. Without Notion, leave it out and the studio shows no Notion link.
+
 This makes the folder in the brain and the card in the studio together, so the card exists before any footage comes in:
 
 ```
@@ -69,12 +71,21 @@ As footage comes in, save each file straight into `raw/a-roll` or `raw/b-roll` b
 The studio is made once, the first time someone works on a video. Do this only when `/agent/apps/content-studio` doesn't exist yet. Run from this skill's folder:
 
 1. `app create content-studio --icon film-slate --colors "#15161A,#CFFF5B"`
-2. `python3 scripts/studio.py install --name "<first name>"`. The home page title says "Welcome to your content studio, <first name>". Ask for their first name once if it isn't known.
+2. Ask two things in one short message: their first name (for the welcome title, "Welcome to your content studio, <first name>"), and one accent color for their studio, as a color name or hex code. Turn a color name into a hex code. Then run `python3 scripts/studio.py install --name "<first name>" --accent "<#hex>"`.
 3. `app check content-studio`. It should say no violations.
 
 The studio needs a sign-in to open, so only people with access to this Runneth workspace can see the videos. Keep it that way unless the person asks for a public link.
 
 Tell the person once, in one short line, that every video they work on now gets its own card in their content studio.
+
+### The look
+
+The studio is dark with two colors, each with one job:
+
+- **Lime** is Runneth's color and is the same for everyone. It marks what's done or picked: the hearted take, approved versions, kept clips, the open tab.
+- **The accent** is the person's own color. It's on the main buttons (Copy my notes, Save note, Copy my picks, Save this clip), the info tags and the Open in Notion link.
+
+To change the accent later: `python3 scripts/studio.py set-accent --color "<#hex>"`.
 
 ## Step 4: Fill the tabs as the editing skills run
 
