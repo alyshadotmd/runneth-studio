@@ -14,6 +14,10 @@
   --deep: #0f1013;
   --lime: #cfff5b;
   --on-lime: #111111;
+  /* Accent: the one color the person picks at install (studio.py install --accent). Lime always stays. */
+  --accent: #5047eb;
+  --accent-text: color-mix(in srgb, var(--accent) 50%, #ffffff);
+  --on-accent: #ffffff;
   --sans: Inter, Arial, sans-serif;
   --mono: "DM Mono", ui-monospace, monospace;
   --serif: "Instrument Serif", Georgia, serif;
