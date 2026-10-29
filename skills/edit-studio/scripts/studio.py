@@ -136,7 +136,34 @@ def done(project, tab, extra=None):
 
 # ---------- commands ----------
 
-def install(app, name):
+DEFAULT_ACCENT = "#5047eb"
+
+
+def set_accent(app, accent):
+    """Put the person's accent color into the studio's theme. Lime always stays."""
+    accent = (accent or DEFAULT_ACCENT).strip()
+    if not re.fullmatch(r"#?[0-9a-fA-F]{6}", accent):
+        sys.exit(f"Accent color must be a hex code like #5047eb, not {accent}")
+    accent = "#" + accent.lstrip("#").lower()
+    theme = app / "site" / "theme.css"
+    css = theme.read_text()
+    css = re.sub(r"--accent: #[0-9a-fA-F]{6};", f"--accent: {accent};", css, count=1)
+    theme.write_text(css)
+    return accent
+
+
+def set_notion(app, slug, url):
+    index_path, index = load_index(app)
+    project = find_project(index, slug)
+    if url:
+        project["notion"] = url
+    else:
+        project.pop("notion", None)
+    write_json(index_path, index)
+    done(project, project.get("latest") or "takes", {"notion": project.get("notion")})
+
+
+def install(app, name, accent=""):
     cfg = app / "buildeth.app.json"
     if not cfg.exists():
         sys.exit(f"No app at {app}. Run: app create content-studio --icon film-slate --colors \"#15161A,#CFFF5B\"")
@@ -146,12 +173,15 @@ def install(app, name):
     for f in ("app.js", "styles.css", "theme.css"):
         shutil.copyfile(TEMPLATE / f, site / f)
     (site / "index.html").write_text((TEMPLATE / "index.html").read_text().replace("{{ROUTE}}", route))
+    acc = set_accent(app, accent or read_json(app / "data" / "projects.json", {}).get("accent", ""))
     path = app / "data" / "projects.json"
     index = read_json(path, {"owner": "", "projects": []})
     if name:
         index["owner"] = name.strip()
+    if accent:
+        index["accent"] = acc
     write_json(path, index)
-    print(json.dumps({"installed": str(site), "owner": index["owner"]}))
+    print(json.dumps({"installed": str(site), "owner": index["owner"], "accent": index.get("accent", DEFAULT_ACCENT)}))
 
 
 def list_projects(app):
@@ -194,7 +224,7 @@ def add_to_projects_list(projects_dir, slug, title, emoji):
             f.write(line)
 
 
-def new_project(app, title, date, projects_dir, emoji, ptype, brand):
+def new_project(app, title, date, projects_dir, emoji, ptype, brand, notion=""):
     index_path, index = load_index(app)
     date = date or datetime.date.today().isoformat()
     slug = f"{date}-{slugify(title)}"
@@ -215,7 +245,7 @@ def new_project(app, title, date, projects_dir, emoji, ptype, brand):
     add_to_projects_list(Path(projects_dir), slug, title.strip(), emoji)
 
     project = {"slug": slug, "title": title.strip(), "created": date, "folder": str(folder)}
-    for k, v in (("emoji", emoji), ("type", ptype), ("brand", brand)):
+    for k, v in (("emoji", emoji), ("type", ptype), ("brand", brand), ("notion", notion)):
         if v:
             project[k] = v
     index["projects"].insert(0, project)
@@ -383,12 +413,16 @@ def main():
     ap.add_argument("--app-dir", default=str(DEFAULT_APP))
     sub = ap.add_subparsers(dest="cmd", required=True)
     a = sub.add_parser("install"); a.add_argument("--name", default="", help="First name for the welcome title")
+    a.add_argument("--accent", default="", help="The person's accent color as a hex code, like #5047eb")
+    a = sub.add_parser("set-accent"); a.add_argument("--color", required=True)
+    a = sub.add_parser("set-notion"); a.add_argument("--project", required=True); a.add_argument("--url", default="", help="Leave empty to remove the link")
     sub.add_parser("list")
     a = sub.add_parser("new-project")
     a.add_argument("--title", required=True, help="Plain title, like 'Buoy founder ad breakdown'")
     a.add_argument("--date", default="", help="Date the project started (YYYY-MM-DD). Defaults to today")
     a.add_argument("--projects-dir", default=str(DEFAULT_PROJECTS))
     a.add_argument("--emoji", default=""); a.add_argument("--type", default=""); a.add_argument("--brand", default="")
+    a.add_argument("--notion", default="", help="Link to this video's Notion page. Only when Notion is connected")
     a = sub.add_parser("add-takes"); a.add_argument("--project", required=True); a.add_argument("--takes", required=True)
     a = sub.add_parser("add-broll"); a.add_argument("--project", required=True); a.add_argument("--video", required=True); a.add_argument("--desc", default="")
     a = sub.add_parser("add-broll-picks"); a.add_argument("--project", required=True); a.add_argument("--video-id", required=True); a.add_argument("--picks", required=True)
@@ -397,11 +431,16 @@ def main():
     args = ap.parse_args()
     app = Path(args.app_dir)
     if args.cmd == "install":
-        install(app, args.name)
+        install(app, args.name, args.accent)
+    elif args.cmd == "set-accent":
+        idx_path = app / "data" / "projects.json"; idx = read_json(idx_path, {"owner": "", "projects": []})
+        idx["accent"] = set_accent(app, args.color); write_json(idx_path, idx); print(json.dumps({"accent": idx["accent"]}))
+    elif args.cmd == "set-notion":
+        set_notion(app, args.project, args.url)
     elif args.cmd == "list":
         list_projects(app)
     elif args.cmd == "new-project":
-        new_project(app, args.title, args.date, args.projects_dir, args.emoji, args.type, args.brand)
+        new_project(app, args.title, args.date, args.projects_dir, args.emoji, args.type, args.brand, args.notion)
     elif args.cmd == "add-takes":
         add_takes(app, args.project, args.takes)
     elif args.cmd == "add-broll":
